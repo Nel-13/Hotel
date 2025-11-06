@@ -47,7 +47,7 @@ app.get("/hotels", (req, res) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "10");
 
-  const url = "https://api.liteapi.travel/v3.0/data/hotels?countryCode=PH&cityName=Manila";
+  const url = "https://api.liteapi.travel/v3.0/data/hotels?countryCode=PH";
   const options = { headers: { "X-API-Key": apiKey } };
 
   fetch(url, options)
@@ -63,9 +63,14 @@ app.get("/hotels", (req, res) => {
         rating: h.rating,
         image: h.main_photo || h.thumbnail,
       }));
+
       const start = (page - 1) * limit;
       const end = start + limit;
-      res.json({ data: hotels.slice(start, end), total: hotels.length });
+
+      res.json({
+        data: hotels.slice(start, end),
+        total: hotels.length,
+      });
     })
     .catch((err) => {
       console.error("Fetch error:", err);

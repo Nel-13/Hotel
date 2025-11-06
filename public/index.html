@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Hotels in Manila</title>
+<title>Hotels in the Philippines</title>
 <style>
 body {
   font-family: Arial, sans-serif;
@@ -83,10 +83,26 @@ button:hover {
   background: #ccc;
   cursor: not-allowed;
 }
+#city-filter {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
 </style>
 </head>
 <body>
-<h2>Hotels in Manila</h2>
+<h2>Hotels in the Philippines</h2>
+
+<select id="city-filter">
+  <option value="">All Cities</option>
+  <option value="Manila">Manila</option>
+  <option value="Cebu">Cebu</option>
+  <option value="Davao">Davao</option>
+  <option value="Baguio">Baguio</option>
+  <option value="Boracay">Boracay</option>
+</select>
+
 <div id="hotel-list">Loading hotels...</div>
 
 <div class="pagination">
@@ -97,19 +113,26 @@ button:hover {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const API_KEY = "sand_8f69823d-70f1-4596-b70a-53505dbe0c25";
-  const API_URL = "https://api.liteapi.travel/v3.0/data/hotels?countryCode=PH&cityName=Manila";
-
+  const BASE_URL = "https://api.liteapi.travel/v3.0/data/hotels";
   const HOTELS_PER_PAGE = 6;
   let hotels = [];
   let currentPage = 1;
+  let selectedCity = "";
+
+  const hotelList = document.getElementById("hotel-list");
+  const cityFilter = document.getElementById("city-filter");
 
   async function loadHotels() {
-    const hotelList = document.getElementById("hotel-list");
     hotelList.innerHTML = "<p>Loading hotels...</p>";
 
+    const url = selectedCity
+      ? `${BASE_URL}?countryCode=PH&cityName=${encodeURIComponent(selectedCity)}`
+      : `${BASE_URL}?countryCode=PH`;
+
     try {
-      const response = await fetch(API_URL, { headers: { "X-API-Key": API_KEY } });
+      const response = await fetch(url, { headers: { "X-API-Key": API_KEY } });
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
       const result = await response.json();
       hotels = Array.isArray(result.data) ? result.data : [];
 
@@ -118,6 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      currentPage = 1;
       renderHotels();
     } catch (error) {
       console.error("Error loading hotels:", error);
@@ -126,7 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderHotels() {
-    const hotelList = document.getElementById("hotel-list");
     hotelList.innerHTML = "";
 
     const start = (currentPage - 1) * HOTELS_PER_PAGE;
@@ -169,6 +192,11 @@ document.addEventListener("DOMContentLoaded", () => {
       currentPage--;
       renderHotels();
     }
+  });
+
+  cityFilter.addEventListener("change", () => {
+    selectedCity = cityFilter.value;
+    loadHotels();
   });
 
   loadHotels();
